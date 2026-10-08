@@ -1,4 +1,4 @@
-name: Supabase Keep Alive - PUNU DIES
+name: Supabase Keep Alive - PUNCHDIES
 
 on:
   workflow_dispatch:
@@ -6,25 +6,25 @@ on:
     - cron: "0 2 * * *"
 
 jobs:
-  ping:
+  punchdies:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Ping Supabase
+      - name: Ping PUNCHDIES
         env:
           SUPABASE_URL: https://qjyyjrqghsgttowgxmjd.supabase.co
-          SUPABASE_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}
+          SUPABASE_KEY: ${{ secrets.PUNCHDIES }}
         run: |
           response=$(curl -s -o /dev/null -w "%{http_code}" \
-            "$SUPABASE_URL/rest/v1/problems?select=id&limit=1" \
+            "$SUPABASE_URL/rest/v1/punchdies?select=*&limit=1" \
             -H "apikey: $SUPABASE_KEY" \
             -H "Authorization: Bearer $SUPABASE_KEY")
 
           echo "HTTP Status: $response"
 
           if [ "$response" -ge 200 ] && [ "$response" -lt 300 ]; then
-            echo "Supabase PUNU DIES berhasil diping."
+            echo "Supabase PUNCHDIES berhasil diping."
           else
-            echo "Ping gagal."
+            echo "Ping PUNCHDIES gagal."
             exit 1
           fi
