@@ -6,25 +6,44 @@ on:
     - cron: "0 2 * * *"
 
 jobs:
-  punchdies:
+  ping:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Ping PUNCHDIES
+      - name: Ping Supabase PUNCHDIES
         env:
           SUPABASE_URL: https://qjyyjrqghsgttowgxmjd.supabase.co
-          SUPABASE_KEY: ${{ secrets.PUNCHDIES }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+
         run: |
-          response=$(curl -s -o /dev/null -w "%{http_code}" \
-            "$SUPABASE_URL/rest/v1/punchdies?select=*&limit=1" \
+          set -e
+
+          if [ -z "$SUPABASE_KEY" ]; then
+            echo "ERROR: Secret SUPABASE_ANON_KEY belum diisi."
+            exit 1
+          fi
+
+          echo "Menghubungi Supabase PUNCHDIES..."
+
+          HTTP_STATUS=$(curl \
+            --silent \
+            --show-error \
+            --output /tmp/supabase_response.txt \
+            --write-out "%{http_code}" \
+            --connect-timeout 15 \
+            --max-time 30 \
             -H "apikey: $SUPABASE_KEY" \
-            -H "Authorization: Bearer $SUPABASE_KEY")
+            -H "Authorization: Bearer $SUPABASE_KEY" \
+            "$SUPABASE_URL/rest/v1/")
 
-          echo "HTTP Status: $response"
+          echo "HTTP Status: $HTTP_STATUS"
 
-          if [ "$response" -ge 200 ] && [ "$response" -lt 300 ]; then
-            echo "Supabase PUNCHDIES berhasil diping."
+          if [ "$HTTP_STATUS" = "200" ]; then
+            echo "BERHASIL: Supabase merespons."
           else
-            echo "Ping PUNCHDIES gagal."
+            echo "GAGAL: Supabase menolak atau tidak merespons."
+            echo "Pesan server:"
+            head -c 1000 /tmp/supabase_response.txt
+            echo ""
             exit 1
           fi
